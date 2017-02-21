@@ -4,6 +4,22 @@ pub enum Node<T> {
     Used{data: T, next: Option<usize>},
 }
 
+impl<T> Node<T> {
+    fn next(&self) -> Option<usize> {
+        match self {
+            &Node::Empty{next} => next,
+            &Node::Used{data:_, next} => next,
+        }
+    }
+
+    fn data(&self) -> Option<&T> {
+        match self {
+            &Node::Used{ref data, next: _} => Some(data),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct LinkedList<T> {
     data: Vec<Node<T>>,
@@ -17,14 +33,13 @@ pub struct Iter<'a, T:'a> {
 }
 
 impl<'a, T> Iterator for Iter<'a, T> {
-    type Item = T;
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<T> {
+    fn next(&mut self) -> Option<&'a T> {
         if let Some(index) = self.current_index {
             let item = &self.data[index];
-            //self.current_index = item.next;
-            //Some(item.data)
-            None
+            self.current_index = item.next();
+            item.data()
         } else {
             None
         }
@@ -40,11 +55,11 @@ impl<T> LinkedList<T> {
         };
         // create the empty list
         for n in 0usize..size {
-            //list.data.push(Node::<T>::Empty{next: Some(n+1)});
+            list.data.push(Node::Empty{next: Some(n+1)});
         }
         if size > 0 {
             list.empty_head = Some(0);
-            //list.data[size-1] = Node::<T>Empty{data: 0, next: None};
+            list.data[size-1] = Node::Empty{next: None};
         }
         list
     }
@@ -56,16 +71,10 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn push(&mut self, data: i32) {
+    pub fn push(&mut self, data: T) {
         let slot = self.get_empty().expect("No more slots");
-        if let Some(head) = self.head {
-            self.head = Some(slot);
-            //self.data[slot].data = data;
-            //self.data[slot].next = Some(head);
-        } else {
-            self.head = Some(slot);
-            //self.data[slot] = Node{data: data, next: None};
-        }
+        self.data[slot] = Node::Used{data: data, next: self.head};
+        self.head = Some(slot);
     }
 
     pub fn get_head(&self) -> Option<&Node<T>> {
@@ -74,7 +83,7 @@ impl<T> LinkedList<T> {
 
     fn get_empty(&mut self) -> Option<usize> {
         if let Some(empty) = self.empty_head {
-            //self.empty_head = self.data[empty].next;
+            self.empty_head = self.data[empty].next();
             Some(empty)
         } else {
             None
@@ -83,7 +92,7 @@ impl<T> LinkedList<T> {
 }
 
 impl<'a, T> IntoIterator for &'a LinkedList<T> {
-    type Item = T;
+    type Item = &'a T;
     type IntoIter = Iter<'a, T>;
 
     fn into_iter(self) -> Iter<'a, T> {
@@ -134,8 +143,6 @@ mod tests {
             },
             _ => panic!(""),
         }
-        //assert_eq!(20, head.data);
-        //assert!(head.next.is_some());
     }
 
     #[test]
@@ -146,7 +153,7 @@ mod tests {
 
         let copy: Vec<_> = list.iter().collect();
 
-        assert_eq!(vec![20,10], copy);
+        assert_eq!(vec![&20,&10], copy);
     }
 
     #[test]
@@ -156,7 +163,7 @@ mod tests {
         list.push(10);
 
         for elem in &list {
-            assert_eq!(10, elem);
+            assert_eq!(10, *elem);
         }
     }
 }
