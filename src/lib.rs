@@ -1,22 +1,22 @@
 #[derive(Debug, PartialEq, Eq)]
-pub struct Item {
+pub struct Node {
     data: i32,
     next: Option<usize>,
 }
 
 #[derive(Debug)]
 pub struct LinkedList {
-    data: Vec<Item>,
+    data: Vec<Node>,
     head: Option<usize>,
     empty_head: Option<usize>,
 }
 
-pub struct LinkedListIterator<'a> {
-    data: &'a Vec<Item>,
+pub struct Iter<'a> {
+    data: &'a Vec<Node>,
     current_index: Option<usize>,
 }
 
-impl<'a> Iterator for LinkedListIterator<'a> {
+impl<'a> Iterator for Iter<'a> {
     type Item = i32;
 
     fn next(&mut self) -> Option<i32> {
@@ -39,17 +39,17 @@ impl LinkedList {
         };
         // create the empty list
         for n in 0usize..size {
-            list.data.push(Item{data: 0, next: Some(n+1)});
+            list.data.push(Node{data: 0, next: Some(n+1)});
         }
         if size > 0 {
             list.empty_head = Some(0);
-            list.data[size-1] = Item{data: 0, next: None};
+            list.data[size-1] = Node{data: 0, next: None};
         }
         list
     }
 
-    pub fn iter(&self) -> LinkedListIterator {
-        LinkedListIterator {
+    pub fn iter(&self) -> Iter {
+        Iter {
             data: &self.data,
             current_index: self.head,
         }
@@ -63,11 +63,11 @@ impl LinkedList {
             self.data[slot].next = Some(head);
         } else {
             self.head = Some(slot);
-            self.data[slot] = Item{data: data, next: None};
+            self.data[slot] = Node{data: data, next: None};
         }
     }
 
-    pub fn get_head(&self) -> Option<&Item> {
+    pub fn get_head(&self) -> Option<&Node> {
         self.head.map(|h| &self.data[h])
     }
 
@@ -83,9 +83,9 @@ impl LinkedList {
 
 impl<'a> IntoIterator for &'a LinkedList {
     type Item = i32;
-    type IntoIter = LinkedListIterator<'a>;
+    type IntoIter = Iter<'a>;
 
-    fn into_iter(self) -> LinkedListIterator<'a> {
+    fn into_iter(self) -> Iter<'a> {
         self.iter()
     }
 }
