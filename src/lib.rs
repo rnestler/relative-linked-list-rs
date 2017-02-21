@@ -71,7 +71,7 @@ impl<T> LinkedList<T> {
         }
     }
 
-    pub fn push(&mut self, data: T) {
+    pub fn push_front(&mut self, data: T) {
         let slot = self.get_empty().expect("No more slots");
         self.data[slot] = Node::Used{data: data, next: self.head};
         self.head = Some(slot);
@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn create_list_push() {
         let mut list = LinkedList::new(10);
-        list.push(10);
+        list.push_front(10);
         let head = list.get_head().unwrap();
         match head {
             &Node::Used{data, next} => {
@@ -133,8 +133,8 @@ mod tests {
     #[test]
     fn create_list_push_multiple() {
         let mut list = LinkedList::new(10);
-        list.push(10);
-        list.push(20);
+        list.push_front(10);
+        list.push_front(20);
         let head = list.get_head().unwrap();
         match head {
             &Node::Used{data, next} => {
@@ -148,8 +148,10 @@ mod tests {
     #[test]
     fn iter() {
         let mut list = LinkedList::new(10);
-        list.push(10);
-        list.push(20);
+        list.push_front(10);
+        list.push_front(20);
+
+        println!("{:?}", list);
 
         let copy: Vec<_> = list.iter().collect();
 
@@ -159,8 +161,8 @@ mod tests {
     #[test]
     fn into_iter() {
         let mut list = LinkedList::new(10);
-        list.push(10);
-        list.push(10);
+        list.push_front(10);
+        list.push_front(10);
 
         for elem in &list {
             assert_eq!(10, *elem);
