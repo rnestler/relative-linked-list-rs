@@ -81,6 +81,15 @@ impl LinkedList {
     }
 }
 
+impl<'a> IntoIterator for &'a LinkedList {
+    type Item = i32;
+    type IntoIter = LinkedListIterator<'a>;
+
+    fn into_iter(self) -> LinkedListIterator<'a> {
+        self.iter()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,5 +134,16 @@ mod tests {
         let copy: Vec<_> = list.iter().collect();
 
         assert_eq!(vec![20,10], copy);
+    }
+
+    #[test]
+    fn into_iter() {
+        let mut list = LinkedList::new(10);
+        list.push(10);
+        list.push(10);
+
+        for elem in &list {
+            assert_eq!(10, elem);
+        }
     }
 }
